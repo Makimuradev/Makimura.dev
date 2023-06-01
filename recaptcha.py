@@ -25,7 +25,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 executor = ThreadPoolExecutor(max_workers=5)
 
 model = whisper.load_model("tiny.en.pt")
-api_key = "hello"
+api_key = os.environ.get("API_KEY")
 
 def require_api_key(func):
     def wrapper(*args, **kwargs):
