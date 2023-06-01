@@ -86,27 +86,23 @@ def transcribe_audio(audio_stream_url):
     }
 
     try:
-        response = requests.get(audio_stream_url, headers=headers, stream=False)
+        response = requests.get(audio_stream_url, headers=headers, stream=True)
         response.raise_for_status()
 
         # Save the audio data to a temporary file
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        with tempfile.NamedTemporaryFile(delete=False, dir=script_dir, suffix=".mp3") as temp_file:
+        fd, temp_file_path = tempfile.mkstemp(dir=script_dir, suffix=".mp3")
+        with os.fdopen(fd, 'wb') as temp_file:
             for chunk in response.iter_content(chunk_size=8192):
                 temp_file.write(chunk)
 
-        temp_file_path = temp_file.name
-
-         
-
         # Perform transcription using the whisper
-        transcription = model.transcribe("./" + temp_file_path, verbose=True )
+        transcription = model.transcribe(temp_file_path, verbose=True)
 
         result = transcription["text"].strip()
 
         # Delete the temporary files
         os.remove(temp_file_path)
-         
 
         return result
     except requests.exceptions.RequestException as e:
@@ -126,6 +122,8 @@ def create_app():
 if __name__ == "__main__":
     print("Server started")
     serve(app, host='0.0.0.0', port=8000)
+
+
 
 
 
